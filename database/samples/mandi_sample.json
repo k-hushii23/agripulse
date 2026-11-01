@@ -1,0 +1,242 @@
+{
+  "created": 1627939168,
+  "updated": 1793440857,
+  "created_date": "2021-08-02T21:19:28Z",
+  "updated_date": "2026-10-31T10:00:57Z",
+  "active": "1",
+  "index_name": "9ef84268-d588-465a-a308-a864a43d0070",
+  "org": [
+    "Ministry of Agriculture and Farmers Welfare",
+    "Department of Agriculture and Farmers Welfare"
+  ],
+  "org_type": "Central",
+  "source": "data.gov.in",
+  "title": "Current Daily Price of Various Commodities from Various Markets (Mandi)",
+  "external_ws_url": "",
+  "visualizable": "1",
+  "field": [
+    {
+      "name": "State",
+      "id": "state",
+      "type": "keyword"
+    },
+    {
+      "name": "District",
+      "id": "district",
+      "type": "keyword"
+    },
+    {
+      "name": "Market",
+      "id": "market",
+      "type": "keyword"
+    },
+    {
+      "name": "Commodity",
+      "id": "commodity",
+      "type": "keyword"
+    },
+    {
+      "name": "Variety",
+      "id": "variety",
+      "type": "keyword"
+    },
+    {
+      "name": "Grade",
+      "id": "grade",
+      "type": "keyword"
+    },
+    {
+      "name": "Arrival_Date",
+      "id": "arrival_date",
+      "type": "date"
+    },
+    {
+      "name": "Min_x0020_Price",
+      "id": "min_price",
+      "type": "double"
+    },
+    {
+      "name": "Max_x0020_Price",
+      "id": "max_price",
+      "type": "double"
+    },
+    {
+      "name": "Modal_x0020_Price",
+      "id": "modal_price",
+      "type": "double"
+    }
+  ],
+  "external_ws": 0,
+  "catalog_uuid": "6141ea17-a69d-4713-b600-0a43c8fd9a6c",
+  "sector": [
+    "Agriculture",
+    "Agricultural Marketing"
+  ],
+  "target_bucket": {
+    "field": "9ef84268-d588-465a-a308-a864a43d0070",
+    "index": "daily_mandi_price",
+    "type": "6141ea17-a69d-4713-b600-0a43c8fd9a6c"
+  },
+  "desc": "Current Daily Price of Various Commodities from Various Markets (Mandi)",
+  "field_exposed": [
+    {
+      "name": "State",
+      "id": "state.keyword",
+      "type": "keyword"
+    },
+    {
+      "name": "District",
+      "id": "district",
+      "type": "keyword"
+    },
+    {
+      "name": "Market",
+      "id": "market",
+      "type": "keyword"
+    },
+    {
+      "name": "Commodity",
+      "id": "commodity",
+      "type": "keyword"
+    },
+    {
+      "name": "Variety",
+      "id": "variety",
+      "type": "keyword"
+    },
+    {
+      "name": "Grade",
+      "id": "grade",
+      "type": "keyword"
+    }
+  ],
+  "message": "Resource lists",
+  "version": "2.2.0",
+  "status": "ok",
+  "total": 11787,
+  "count": 10,
+  "limit": "10",
+  "offset": "0",
+  "records": [
+    {
+      "state": "Keralam",
+      "district": "Kozhikode(Calicut)",
+      "market": "Mukkom Market",
+      "commodity": "Beetroot",
+      "variety": "Beetroot",
+      "grade": "FAQ",
+      "arrival_date": "31/10/2026",
+      "min_price": 3400,
+      "max_price": 3700,
+      "modal_price": 3500
+    },
+    {
+      "state": "Keralam",
+      "district": "Wayanad",
+      "market": "Mananthavady Market",
+      "commodity": "Cowpea(Veg)",
+      "variety": "Cowpea (Veg)",
+      "grade": "FAQ",
+      "arrival_date": "31/10/2026",
+      "min_price": 3900,
+      "max_price": 4000,
+      "modal_price": 4000
+    },
+    {
+      "state": "Keralam",
+      "district": "Kozhikode(Calicut)",
+      "market": "Perambra Market",
+      "commodity": "Elephant Yam(Suran)/Amorphophallus",
+      "variety": "Amorphophallus",
+      "grade": "FAQ",
+      "arrival_date": "31/10/2026",
+      "min_price": 4000,
+      "max_price": 4500,
+      "modal_price": 4000
+    },
+    {
+      "state": "Madhya Pradesh",
+      "district": "Mandla",
+      "market": "Krishi Upaj Mandi Samiti Bichhiya",
+      "commodity": "Green Peas",
+      "variety": "Pea",
+      "grade": "FAQ",
+      "arrival_date": "31/10/2026",
+      "min_price": 3505,
+      "max_price": 3505,
+      "modal_price": 3505
+    },
+    {
+      "state": "Telangana",
+      "district": "Hyderabad",
+      "market": "RYTHU BAZAR FALAKNUMA",
+      "commodity": "Carrot",
+      "variety": "Carrot",
+      "grade": "Grade A",
+      "arrival_date": "31/10/2026",
+      "min_price": 4500,
+      "max_price": 4500,
+      "modal_price": 4500
+    },
+    {
+      "state": "Telangana",
+      "district": "Hyderabad",
+      "market": "RYTHU BAZAR FALAKNUMA",
+      "commodity": "Bottle gourd",
+      "variety": "Bottle Gourd",
+      "grade": "Grade A",
+      "arrival_date": "31/10/2026",
+      "min_price": 1300,
+      "max_price": 1300,
+      "modal_price": 1300
+    },
+    {
+      "state": "Odisha",
+      "district": "Rayagada",
+      "market": "Gunpur APMC",
+      "commodity": "Pumpkin",
+      "variety": "Other",
+      "grade": "Grade Range-2",
+      "arrival_date": "31/10/2026",
+      "min_price": 2540,
+      "max_price": 3150,
+      "modal_price": 2840
+    },
+    {
+      "state": "Madhya Pradesh",
+      "district": "Mandsaur",
+      "market": "Garoth(F&V) APMC",
+      "commodity": "Ladies Finger",
+      "variety": "Ladies Finger",
+      "grade": "Local",
+      "arrival_date": "31/10/2026",
+      "min_price": 300,
+      "max_price": 425,
+      "modal_price": 350
+    },
+    {
+      "state": "Bihar",
+      "district": "Begusarai",
+      "market": "Balliah APMC",
+      "commodity": "Potato",
+      "variety": "Local",
+      "grade": "Grade C",
+      "arrival_date": "31/10/2026",
+      "min_price": 1000,
+      "max_price": 1200,
+      "modal_price": 1100
+    },
+    {
+      "state": "Bihar",
+      "district": "Begusarai",
+      "market": "Balliah APMC",
+      "commodity": "Onion",
+      "variety": "1st Sort",
+      "grade": "Grade C",
+      "arrival_date": "31/10/2026",
+      "min_price": 4800,
+      "max_price": 5000,
+      "modal_price": 4900
+    }
+  ]
+}
