@@ -1,22 +1,28 @@
 require("dotenv").config();
 
-const axios = require("axios");
-
 const pool = require("../config/db");
 
-// Agmarknet API endpoint
+// ==========================================
+
+// API CONFIGURATION
+
+// ==========================================
 
 const API_URL =
 
     "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
 
-// Number of records fetched per request
-
 const LIMIT = 1000;
+
+const MAX_RETRIES = 4;
+
+const REQUEST_TIMEOUT = 60000;
 
 // ==========================================
 
 // 1. FETCH ALL MANDI DATA USING PAGINATION
+
+// WITH AUTOMATIC RETRIES
 
 // ==========================================
 
@@ -28,37 +34,167 @@ async function fetchAllMandiData() {
 
     let totalRecords = 0;
 
+    // Check API key
+
+    if (!process.env.DATA_GOV_API_KEY) {
+
+        throw new Error("DATA_GOV_API_KEY is missing in .env file");
+
+    }
+
     try {
 
         while (true) {
 
             console.log(`Fetching records from offset ${offset}...`);
 
-            const response = await axios.get(API_URL, {
+            let data;
 
-                params: {
+            // Retry mechanism
 
-                    "api-key": process.env.DATA_GOV_API_KEY,
+            for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
 
-                    format: "json",
+                try {
 
-                    limit: LIMIT,
+                    // Construct API URL with query parameters
 
-                    offset: offset
+                    const url = new URL(API_URL);
 
-                },
+                    url.searchParams.append(
 
-                timeout: 30000
+                        "api-key",
 
-            });
+                        process.env.DATA_GOV_API_KEY
 
-            const records = response.data.records || [];
+                    );
 
-            totalRecords = Number(response.data.total);
+                    url.searchParams.append("format", "json");
+
+                    url.searchParams.append("limit", LIMIT);
+
+                    url.searchParams.append("offset", offset);
+
+                    // Make HTTP request using native Fetch
+
+                    const response = await fetch(url, {
+
+                        method: "GET",
+
+                        signal: AbortSignal.timeout(REQUEST_TIMEOUT)
+
+                    });
+
+                    // Handle HTTP errors
+
+                    if (!response.ok) {
+
+                        const error = new Error(
+
+                            `HTTP Error: ${response.status}`
+
+                        );
+
+                        error.status = response.status;
+
+                        throw error;
+
+                    }
+
+                    // Convert JSON response into JavaScript object
+
+                    data = await response.json();
+
+                    // Request successful
+
+                    break;
+
+                } catch (error) {
+
+                    const status = error.status;
+
+                    const shouldRetry =
+
+                        !status ||
+
+                        status === 429 ||
+
+                        status >= 500;
+
+                    if (!shouldRetry || attempt > MAX_RETRIES) {
+
+                        throw error;
+
+                    }
+
+                    // Exponential backoff
+
+                    const delay = Math.pow(2, attempt) * 1000;
+
+                    console.log(
+
+                        `Request failed at offset ${offset}.`
+
+                    );
+
+                    console.log(
+
+                        `Retry attempt ${attempt}/${MAX_RETRIES}`
+
+                    );
+
+                    console.log(
+
+                        `Waiting ${delay / 1000} seconds before retrying...`
+
+                    );
+
+                    await new Promise(resolve =>
+
+                        setTimeout(resolve, delay)
+
+                    );
+
+                }
+
+            }
+
+            // Validate API response
+
+            if (!Array.isArray(data.records)) {
+
+                throw new Error(
+
+                    "Invalid API response: records must be an array"
+
+                );
+
+            }
+
+            const records = data.records;
+
+            // Validate total records
+
+            const apiTotal = Number(data.total);
+
+            if (!Number.isFinite(apiTotal) || apiTotal < 0) {
+
+                throw new Error(
+
+                    "Invalid API response: total records unavailable"
+
+                );
+
+            }
+
+            totalRecords = apiTotal;
+
+            // Store fetched records
 
             allRecords.push(...records);
 
             console.log(`Fetched ${records.length} records.`);
+
+            // Stop if no records are returned
 
             if (records.length === 0) {
 
@@ -66,7 +202,11 @@ async function fetchAllMandiData() {
 
             }
 
+            // Update offset
+
             offset += records.length;
+
+            // Stop when all records are fetched
 
             if (offset >= totalRecords) {
 
@@ -74,9 +214,13 @@ async function fetchAllMandiData() {
 
             }
 
-            // Small delay between API requests
+            // Delay between requests
 
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise(resolve =>
+
+                setTimeout(resolve, 500)
+
+            );
 
         }
 
@@ -86,6 +230,16 @@ async function fetchAllMandiData() {
 
         console.log("Total fetched:", allRecords.length);
 
+        if (allRecords.length < totalRecords) {
+
+            console.log(
+
+                "WARNING: Some API records could not be fetched."
+
+            );
+
+        }
+
         return allRecords;
 
     } catch (error) {
@@ -94,7 +248,7 @@ async function fetchAllMandiData() {
 
             "API fetching failed:",
 
-            error.response?.data || error.message
+            error.message
 
         );
 
@@ -158,7 +312,15 @@ function cleanRecord(record) {
 
     function cleanPrice(value) {
 
-        if (value === null || value === undefined || value === "") {
+        if (
+
+            value === null ||
+
+            value === undefined ||
+
+            value === ""
+
+        ) {
 
             return null;
 
@@ -173,6 +335,8 @@ function cleanRecord(record) {
             : null;
 
     }
+
+    // Return standardized record
 
     return {
 
@@ -226,7 +390,9 @@ async function insertMandiRecord(client, record) {
 
         record.max_price === null ||
 
-        record.modal_price === null
+        record.modal_price === null ||
+
+        record.min_price > record.max_price
 
     ) {
 
@@ -354,7 +520,11 @@ async function ingestSpotData() {
 
     try {
 
-        console.log("Starting Agmarknet data ingestion...\n");
+        console.log(
+
+            "Starting Agmarknet data ingestion...\n"
+
+        );
 
         // Fetch all records from API
 
@@ -370,7 +540,17 @@ async function ingestSpotData() {
 
         await client.query("BEGIN");
 
+        // Process every API record
+
         for (const rawRecord of records) {
+
+            // Create checkpoint before processing
+
+            await client.query(
+
+                "SAVEPOINT record_savepoint"
+
+            );
 
             try {
 
@@ -398,19 +578,55 @@ async function ingestSpotData() {
 
                 }
 
+                // Release checkpoint after success
+
+                await client.query(
+
+                    "RELEASE SAVEPOINT record_savepoint"
+
+                );
+
             } catch (error) {
 
-                // Stop the entire transaction on database errors
+                // Count failed records
 
-                throw error;
+                failed++;
+
+                console.error(
+
+                    "Record failed:",
+
+                    error.message
+
+                );
+
+                // Roll back only current record
+
+                await client.query(
+
+                    "ROLLBACK TO SAVEPOINT record_savepoint"
+
+                );
+
+                await client.query(
+
+                    "RELEASE SAVEPOINT record_savepoint"
+
+                );
 
             }
 
         }
 
-        // Save all database changes
+        // Save all successful database changes
 
         await client.query("COMMIT");
+
+        // ==========================================
+
+        // INGESTION SUMMARY
+
+        // ==========================================
 
         console.log("\n========== INGESTION SUMMARY ==========");
 
@@ -424,21 +640,53 @@ async function ingestSpotData() {
 
         console.log("=======================================");
 
-        console.log("\nAgmarknet ingestion completed successfully!");
+        console.log(
+
+            "\nAgmarknet ingestion completed successfully!"
+
+        );
 
     } catch (error) {
 
+        // Roll back entire transaction if main process fails
+
         if (client) {
 
-            await client.query("ROLLBACK");
+            try {
+
+                await client.query("ROLLBACK");
+
+                console.log(
+
+                    "Database transaction rolled back."
+
+                );
+
+            } catch (rollbackError) {
+
+                console.error(
+
+                    "Rollback failed:",
+
+                    rollbackError.message
+
+                );
+
+            }
 
         }
 
-        console.error("\nIngestion failed:", error.message);
+        console.error(
 
-        console.log("Database transaction rolled back.");
+            "\nIngestion failed:",
+
+            error.message
+
+        );
 
     } finally {
+
+        // Release database connection
 
         if (client) {
 
@@ -446,14 +694,18 @@ async function ingestSpotData() {
 
         }
 
+        // Close connection pool for standalone execution
+
         await pool.end();
 
     }
 
 }
 
+// ==========================================
 
 // 5. RUN THE INGESTION
 
+// ==========================================
 
 ingestSpotData();

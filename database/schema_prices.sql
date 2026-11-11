@@ -8,8 +8,10 @@ CREATE TABLE IF NOT EXISTS commodities (
     grade VARCHAR(100),
     unit VARCHAR(50),
 
-    UNIQUE (name, variety, grade)
+    CONSTRAINT unique_commodity
+    UNIQUE NULLS NOT DISTINCT (name, variety, grade)
 );
+
 
 -- 2. MARKETS TABLE
 -- Stores agricultural market information.
@@ -20,7 +22,8 @@ CREATE TABLE IF NOT EXISTS markets (
     district VARCHAR(255),
     state VARCHAR(255),
 
-    UNIQUE (name, district, state)
+    CONSTRAINT unique_market
+    UNIQUE NULLS NOT DISTINCT (name, district, state)
 );
 
 
@@ -41,22 +44,20 @@ CREATE TABLE IF NOT EXISTS spot_prices (
 
     arrival_qty NUMERIC(12, 2),
 
-    FOREIGN KEY (commodity_id)
+    CONSTRAINT fk_spot_commodity
+        FOREIGN KEY (commodity_id)
         REFERENCES commodities(id),
 
-    FOREIGN KEY (market_id)
+    CONSTRAINT fk_spot_market
+        FOREIGN KEY (market_id)
         REFERENCES markets(id),
 
-    UNIQUE (commodity_id, market_id, price_date)
+    CONSTRAINT unique_spot_price
+        UNIQUE (commodity_id, market_id, price_date)
 );
 
--- 4. SPOT PRICE INDEX
--- Helps retrieve historical prices efficiently.
 
-CREATE INDEX IF NOT EXISTS idx_spot_prices_lookup
-ON spot_prices (commodity_id, market_id, price_date);
-
--- 5. FUTURES PRICES TABLE
+-- 4. FUTURES PRICES TABLE
 -- Stores NCDEX futures market data.
 
 CREATE TABLE IF NOT EXISTS futures_prices (
@@ -70,8 +71,10 @@ CREATE TABLE IF NOT EXISTS futures_prices (
 
     settlement_price NUMERIC(12, 2),
 
-    FOREIGN KEY (commodity_id)
+    CONSTRAINT fk_futures_commodity
+        FOREIGN KEY (commodity_id)
         REFERENCES commodities(id),
 
-    UNIQUE (commodity_id, contract_month, price_date)
+    CONSTRAINT unique_futures_price
+        UNIQUE NULLS NOT DISTINCT (commodity_id, contract_month, price_date)
 );
