@@ -1,50 +1,80 @@
 require("dotenv").config();
 
-const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 
-// Government API endpoint
+// ==========================================
+// GOVERNMENT API CONFIGURATION
+// ==========================================
+
 const API_URL =
   "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
+
+// ==========================================
+// FETCH MANDI DATA
+// ==========================================
 
 async function fetchMandiData() {
   try {
     console.log("Connecting to data.gov.in...");
 
-    const response = await axios.get(API_URL, {
-      params: {
-        "api-key": process.env.DATA_GOV_API_KEY,
-        format: "json",
-        limit: 10,
-        offset: 0,
-      },
-    });
+    if (!process.env.DATA_GOV_API_KEY) {
+      throw new Error("API key missing. Check your .env file.");
+    }
+
+    // Build API URL
+    const url = new URL(API_URL);
+
+    url.searchParams.append("api-key", process.env.DATA_GOV_API_KEY);
+    url.searchParams.append("format", "json");
+    url.searchParams.append("limit", "10");
+    url.searchParams.append("offset", "0");
+
+    // Fetch API data using native Fetch
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText}`
+      );
+    }
+
+    // Convert response to JSON
+    const data = await response.json();
 
     console.log("API connected successfully!");
 
-    // Save the API response
+    // Save API response
     const outputPath = path.join(
       __dirname,
       "../../database/samples/mandi_sample.json"
     );
 
+    // Create directory if it doesn't exist
+    fs.mkdirSync(path.dirname(outputPath), {
+      recursive: true,
+    });
+
+    // Write JSON file
     fs.writeFileSync(
       outputPath,
-      JSON.stringify(response.data, null, 2)
+      JSON.stringify(data, null, 2)
     );
 
+    // Display results
     console.log("Sample data saved successfully!");
-    console.log("Total records:", response.data.records?.length);
-    console.log("First record:", response.data.records?.[0]);
+    console.log("Total records:", data.records?.length || 0);
+    console.log("Total available records:", data.total || "Not provided");
+    console.log("First record:", data.records?.[0] || "No records found");
 
   } catch (error) {
-    console.log("Something went wrong:");
-
-    console.log(
-      error.response?.data || error.message
-    );
+    console.error("Something went wrong:");
+    console.error(error.message);
   }
 }
+
+// ==========================================
+// EXECUTE
+// ==========================================
 
 fetchMandiData();

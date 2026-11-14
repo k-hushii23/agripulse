@@ -1,0 +1,233 @@
+const fs = require("fs");
+const path = require("path");
+// ==========================================
+// 1. FILE PATHS
+// ==========================================
+const inputPath = path.join(
+    __dirname,
+    "../../database/clean/ncr_mandi.json"
+);
+const outputPath = path.join(
+    __dirname,
+    "../../database/clean/normalized_mandi.json"
+);
+// ==========================================
+// 2. READ EXTRACTED DATA
+// ==========================================
+const inputData = JSON.parse(
+    fs.readFileSync(inputPath, "utf8")
+);
+const records = inputData.records;
+if (!Array.isArray(records)) {
+    throw new Error("Invalid NCR dataset: records array not found");
+}
+// ==========================================
+// 3. NORMALIZE TEXT FIELDS
+// ==========================================
+function normalizeText(value) {
+    if (value === null || value === undefined) {
+        return null;
+    }
+    const cleaned = String(value)
+        .trim()
+        .replace(/\s+/g, " ");
+    return cleaned === "" ? null : cleaned;
+}
+// ==========================================
+// 4. NORMALIZE DISTRICT NAMES
+// ==========================================
+function normalizeDistrict(value) {
+    const district = normalizeText(value);
+    if (!district) return null;
+    const aliases = {
+        "gurgaon": "Gurugram",
+        "gurugram": "Gurugram",
+        "delhi": "Delhi",
+        "faridabad": "Faridabad",
+        "ghaziabad": "Ghaziabad"
+    };
+    return aliases[district.toLowerCase()] || district;
+}
+// ==========================================
+// 5. NORMALIZE ARRIVAL DATE
+// ==========================================
+function normalizeDate(value) {
+    if (!value) {
+        throw new Error("Missing arrival date");
+    }
+    const parts = String(value).split("/");
+    if (parts.length !== 3) {
+        throw new Error(`Invalid date format: ${value}`);
+    }
+    const [day, month, year] = parts;
+    const date = new Date(
+        Date.UTC(
+            Number(year),
+            Number(month) - 1,
+            Number(day)
+        )
+    );
+    if (
+        date.getUTCFullYear() !== Number(year) ||
+        date.getUTCMonth() !== Number(month) - 1 ||
+        date.getUTCDate() !== Number(day)
+    ) {
+        throw new Error(`Invalid calendar date: ${value}`);
+    }
+    return date.toISOString().split("T")[0];
+}
+// ==========================================
+// 6. NORMALIZE PRICE FIELDS
+// ==========================================
+function normalizePrice(value, fieldName) {
+    if (
+        value === null ||
+        value === undefined ||
+        String(value).trim() === ""
+    ) {
+        throw new Error(`Missing ${fieldName}`);
+    }
+    const price = Number(
+        String(value).replace(/,/g, "").trim()
+    );
+    if (!Number.isFinite(price) || price < 0) {
+        throw new Error(`Invalid ${fieldName}: ${value}`);
+    }
+    return price;
+}
+// ==========================================
+// 7. TRANSFORM RECORDS
+// ==========================================
+const normalizedRecords = records.map(record => {
+    const normalized = {
+        state: normalizeText(record.state),
+        district: normalizeDistrict(record.district),
+        market: normalizeText(record.market),
+        commodity: normalizeText(record.commodity),
+        variety: normalizeText(record.variety),
+        grade: normalizeText(record.grade),
+        arrival_date: normalizeDate(record.arrival_date),
+        min_price: normalizePrice(
+            record.min_price,
+            "min_price"
+        ),
+        max_price: normalizePrice(
+            record.max_price,
+            "max_price"
+        ),
+        modal_price: normalizePrice(
+            record.modal_price,
+            "modal_price"
+        )
+    };
+    const requiredFields = [
+        "state",
+        "district",
+        "market",
+        "commodity"
+    ];
+    requiredFields.forEach(field => {
+        if (!normalized[field]) {
+            throw new Error(`Missing required field: ${field}`);
+        }
+    });
+    if (normalized.min_price > normalized.max_price) {
+        throw new Error(
+            `Minimum price exceeds maximum price: ${normalized.market}`
+        );
+    }
+    if (
+        normalized.modal_price < normalized.min_price ||
+        normalized.modal_price > normalized.max_price
+    ) {
+        throw new Error(
+            `Modal price outside min/max range: ${normalized.market}`
+        );
+    }
+    return normalized;
+});
+// ==========================================
+// 8. REMOVE DUPLICATE RECORDS
+// ==========================================
+const uniqueRecords = [];
+const seenRecords = new Set();
+let duplicateCount = 0;
+normalizedRecords.forEach(record => {
+    const uniqueKey = [
+        record.state,
+        record.district,
+        record.market,
+        record.commodity,
+        record.variety,
+        record.grade,
+        record.arrival_date
+    ].join("|").toLowerCase();
+    if (seenRecords.has(uniqueKey)) {
+        duplicateCount++;
+        return;
+    }
+    seenRecords.add(uniqueKey);
+    uniqueRecords.push(record);
+});
+// ==========================================
+// 9. CREATE OUTPUT DIRECTORY
+// ==========================================
+fs.mkdirSync(
+    path.dirname(outputPath),
+    { recursive: true }
+);
+// ==========================================
+// 10. SAVE NORMALIZED DATASET
+// ==========================================
+const outputData = {
+    source: "data.gov.in",
+    region: "Delhi-centric NCR",
+    normalization_date: new Date().toISOString(),
+    original_records: records.length,
+    normalized_records: uniqueRecords.length,
+    duplicates_removed: duplicateCount,
+    records: uniqueRecords
+};
+fs.writeFileSync(
+    outputPath,
+    JSON.stringify(outputData, null, 4),
+    "utf8"
+);
+// ==========================================
+// 11. DISTRICT BREAKDOWN
+// ==========================================
+const districtCounts = {};
+uniqueRecords.forEach(record => {
+    districtCounts[record.district] =
+        (districtCounts[record.district] || 0) + 1;
+});
+// ==========================================
+// 12. FINAL REPORT
+// ==========================================
+console.log("\n==================================");
+console.log("    AGRIPULSE DATA NORMALIZATION");
+console.log("==================================");
+console.log("\nORIGINAL RECORDS:", records.length);
+console.log(
+    "NORMALIZED RECORDS:",
+    uniqueRecords.length
+);
+console.log(
+    "DUPLICATES REMOVED:",
+    duplicateCount
+);
+console.log("\nDISTRICT BREAKDOWN:");
+console.table(districtCounts);
+console.log("\nDATE RANGE:");
+const dates = uniqueRecords.map(
+    record => record.arrival_date
+);
+const sortedDates = [...dates].sort();
+console.log("EARLIEST:", sortedDates[0]);
+console.log("LATEST:", sortedDates[sortedDates.length - 1]);
+console.log("\nSAMPLE NORMALIZED RECORD:");
+console.log(uniqueRecords[0]);
+console.log("\nSAVED TO:", outputPath);
+console.log("\n==================================");
+console.log("    NORMALIZATION COMPLETE");
+console.log("==================================\n");
