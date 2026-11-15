@@ -5,7 +5,7 @@ const {
   alerts
 } = require("../data/mockData");
 
-// Helper: evaluate if the latest reported price triggers an alert
+// Helper: evaluate if the latest reported price triggers an alert .
 function evaluateAlertStatus(alert) {
   const latest = spotPrices
     .filter((p) => p.commodity_id === alert.commodity_id && p.market_id === alert.market_id)
