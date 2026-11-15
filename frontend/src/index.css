@@ -1,0 +1,71 @@
+:root {
+  --bg-main: #212C23;
+  --bg-card: #2A3526;
+  --bg-deep: #1E2C22;
+  --gold-accent: #685B32;
+  --gold-alt: #6B5A2B;
+  --text-primary: #F1F0EF;
+  --text-secondary: #AEB5A8;
+  --border-subtle: rgba(241, 240, 239, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .serif-heading {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.app-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 5rem;
+}
+
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+
+.card-deep {
+  background-color: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.card-gold {
+  background: linear-gradient(145deg, var(--gold-accent), var(--gold-alt));
+  border: 1px solid rgba(241, 240, 239, 0.2);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+
+.muted-label {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.price-figure {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.15;
+}
