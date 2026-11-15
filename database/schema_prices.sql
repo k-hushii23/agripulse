@@ -78,3 +78,17 @@ CREATE TABLE IF NOT EXISTS futures_prices (
     CONSTRAINT unique_futures_price
         UNIQUE NULLS NOT DISTINCT (commodity_id, contract_month, price_date)
 );
+-- 5. ALERTS TABLE
+-- Stores user-defined price-threshold notifications (PRD Section 10).
+
+
+CREATE TABLE IF NOT EXISTS alerts (
+    id SERIAL PRIMARY KEY,
+    commodity_id INTEGER NOT NULL REFERENCES commodities(id) ON DELETE CASCADE,
+    market_id INTEGER NOT NULL REFERENCES markets(id) ON DELETE CASCADE,
+    target_price NUMERIC(12, 2) NOT NULL,
+    unit VARCHAR(50) DEFAULT 'Quintal',
+    direction VARCHAR(10) NOT NULL CHECK (direction IN ('above', 'below')),
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
