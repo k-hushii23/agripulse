@@ -1,4 +1,4 @@
-# 🌾 AgriPulse
+# AgriPulse
 
 ### Agricultural Commodity Intelligence & Selling Decision Support Platform
 
@@ -6,13 +6,13 @@ AgriPulse is a farmer-focused platform designed to help farmers understand agric
 
 Our goal is to make agricultural market intelligence accessible and understandable, especially for small and marginal farmers.
 
-## 🎯 Problem Statement
+## Problem Statement
 
 Small farmers often have limited access to timely agricultural market information. They may not know how crop prices are changing, which nearby mandi offers a better price, or whether current market conditions suggest selling now or waiting.
 
 AgriPulse aims to reduce this information gap by presenting useful market data and insights in a simple and understandable format.
 
-## 💡 Key Features
+##  Key Features
 
 - **Crop Price Dashboard:** View the latest available prices for different crops.
 - **Price Prediction & Forecast:** Explore estimated future price ranges and possible price movements.
@@ -22,7 +22,7 @@ AgriPulse aims to reduce this information gap by presenting useful market data a
 - **Market Trends:** Explore historical crop-price movements.
 - **Price Alerts:** Set custom price thresholds and receive alerts when qualifying market reports become available.
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technology |
 |---|---|
@@ -32,7 +32,7 @@ AgriPulse aims to reduce this information gap by presenting useful market data a
 | Database | To be finalized |
 | Version Control | Git & GitHub |
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 AgriPulse/
@@ -44,7 +44,7 @@ AgriPulse/
 └── README.md          # Project overview
 ```
 
-## 🚀 Project Objectives
+## Project Objectives
 
 1. Make agricultural price information easier to access.
 2. Help farmers understand historical and potential price movements.
@@ -52,7 +52,7 @@ AgriPulse/
 4. Consider transportation and storage costs in selling decisions.
 5. Present market insights in a simple and transparent way.
 
-## ⚠️ Project Scope
+## Project Scope
 
 AgriPulse is an agricultural market intelligence and decision-support platform. It does not execute crop transactions or guarantee future prices. Predictions and recommendations depend on the availability and quality of market data.
 
@@ -60,7 +60,7 @@ AgriPulse is an agricultural market intelligence and decision-support platform. 
 
 Developed as a collaborative academic capstone project.
 
-## 📌 Project Status
+## Project Status
 
 Currently under development.
 
