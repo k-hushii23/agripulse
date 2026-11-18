@@ -2,8 +2,7 @@ const {
   commodities,
   markets,
   spotPrices,
-  futuresPrices
-} = require("../data/mockData");
+} = require("../../database/samples/mandi_sample.json");
 
 // Helper: compute moving average, trend slope, and standard deviation from historical series
 function computeBaselineStats(cropId, marketId) {
