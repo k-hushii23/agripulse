@@ -20,7 +20,7 @@ app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "ok",
     service: "AgriPulse Backend API",
-    mode: "mock-data",
+    mode: "postgresql",
     timestamp: new Date().toISOString()
   });
 });
