@@ -7,6 +7,12 @@ export default function CropSelector({ crops, selectedCropId, onSelectCrop }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
         {crops.map((crop) => {
           const isSelected = crop.id === selectedCropId;
+          const showVariety =
+            crop.variety &&
+            crop.variety.toLowerCase() !== crop.name.toLowerCase() &&
+            crop.variety.toLowerCase() !== "other";
+
+
           return (
             <button
               key={crop.id}
@@ -21,12 +27,11 @@ export default function CropSelector({ crops, selectedCropId, onSelectCrop }) {
                 color: "var(--text-primary)",
                 fontWeight: isSelected ? 600 : 400,
                 fontSize: "0.9rem",
-                cursor: "pointer",
-                opacity: crop.has_price_data ? 1 : 0.65
+                cursor: "pointer"
               }}
             >
               {crop.name}
-              {!crop.has_price_data ? " (No data)" : ""}
+              {showVariety ? ` (${crop.variety}) `: ""}
             </button>
           );
         })}
