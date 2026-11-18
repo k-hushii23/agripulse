@@ -110,10 +110,10 @@ const createAlert = async (req, res, next) => {
 
     const [cropRes, marketRes] = await Promise.all([
       pool.query(
-        SELECT id, name, COALESCE(NULLIF(unit, ''), 'Quintal') AS unit FROM commodities WHERE id = $1,
+        `SELECT id, name, COALESCE(NULLIF(unit, ''), 'Quintal') AS unit FROM commodities WHERE id = $1`,
         [cropId]
       ),
-      pool.query(SELECT id, name FROM markets WHERE id = $1, [marketId])
+      pool.query(`SELECT id, name FROM markets WHERE id = $1`, [marketId])
     ]);
 
 
@@ -180,24 +180,27 @@ const createAlert = async (req, res, next) => {
 const deleteAlert = async (req, res, next) => {
   try {
     const alertId = Number(req.params.id);
+
     if (!alertId) {
       return res.status(400).json({ error: "Invalid alert ID." });
     }
 
-
-    const { rowCount } = await pool.query(DELETE FROM alerts WHERE id = $1, [alertId]);
-
+    const { rowCount } = await pool.query(
+      `DELETE FROM alerts WHERE id = $1`,
+      [alertId]
+    );
 
     if (rowCount === 0) {
       return res.status(404).json({ error: "Alert not found." });
     }
 
+    res.status(200).json({
+      message: `Alert ${alertId} deleted.`
+    });
 
-    res.status(200).json({ message: Alert ${alertId} deleted. });
   } catch (err) {
     next(err);
   }
 };
-
 
 module.exports = { getAlerts, createAlert, deleteAlert };
