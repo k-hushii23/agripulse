@@ -7,7 +7,7 @@ function formatDate(val) {
   return String(val).split("T")[0];
 }
 
-// GET /api/prices?cropId=...&marketId=... — Latest observed spot price + futures comparison (PRD 7.3 & 7.5)
+// GET /api/prices?cropId=...&marketId= — Latest observed spot price + futures comparison (PRD 7.3 & 7.5)
 const getLatestPrice = async (req, res, next) => {
   try {
     const cropId = Number(req.query.cropId);
@@ -227,4 +227,4 @@ const getNearbyMandis = async (req, res, next) => {
   }
 };
 
-module.exports = { getLatestPrice, getPriceHistory, getNearbyMandis };
+module.exports = { getLatestPrice, getPriceHistory, getNearbyMandis }; 

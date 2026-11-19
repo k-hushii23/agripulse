@@ -21,7 +21,7 @@ app.get("/api/health", (req, res) => {
     status: "ok",
     service: "AgriPulse Backend API",
     mode: "postgresql",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString() 
   });
 });
 
@@ -37,4 +37,6 @@ app.use(globalErrorHandler);
 
 app.listen(PORT, () => {
   console.log(`AgriPulse API server running on http://localhost:${PORT}`);
-});
+}); 
+
+
