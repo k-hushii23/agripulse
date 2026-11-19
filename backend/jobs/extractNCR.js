@@ -76,14 +76,14 @@ const cleanedRecords = ncrRecords.map(record => {
     };
 });
 
-// 7. CREATE OUTPUT DIRECTORY
+// 7.CREATE OUTPUT DIRECTORY
 
 fs.mkdirSync(
     path.dirname(outputPath),
     { recursive: true }
 );
 
-// 8. SAVE CLEAN DATASET
+// 8.SAVE CLEAN DATASET
 
 const outputData = {
     source: "data.gov.in",
