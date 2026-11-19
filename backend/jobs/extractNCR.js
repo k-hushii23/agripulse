@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-// 1. FILE PATHS
+// 1.FILE PATHS
 
 const inputPath = path.join(
     __dirname,
