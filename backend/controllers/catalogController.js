@@ -1,22 +1,28 @@
 const pool = require("../config/db");
 
-// GET /api/crops — returns commodities that have verified spot_prices data (PRD 7.1)
+// GET /api/crops — returns one primary commodity entry per distinct crop name with verified spot_prices data
 const getCrops = async (req, res, next) => {
   try {
     const query = `
-      SELECT
-        c.id,
-        c.name,
-        c.variety,
-        c.grade,
-        COALESCE(NULLIF(c.unit, ''), 'Quintal') AS unit,
-        COUNT(sp.id)::int AS price_count,
-        TRUE AS has_price_data
-      FROM commodities c
-      JOIN spot_prices sp ON sp.commodity_id = c.id
-      GROUP BY c.id, c.name, c.variety, c.grade, c.unit
-      ORDER BY price_count DESC, c.name ASC
-      LIMIT 30;
+      WITH ranked_crops AS (
+        SELECT
+          c.id,
+          c.name,
+          c.variety,
+          c.grade,
+          COALESCE(NULLIF(c.unit, ''), 'Quintal') AS unit,
+          COUNT(sp.id)::int AS price_count,
+          TRUE AS has_price_data,
+          ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(c.name)) ORDER BY COUNT(sp.id) DESC, c.id ASC) AS rn
+        FROM commodities c
+        JOIN spot_prices sp ON sp.commodity_id = c.id
+        GROUP BY c.id, c.name, c.variety, c.grade, c.unit
+      )
+      SELECT id, name, variety, grade, unit, price_count, has_price_data
+      FROM ranked_crops
+      WHERE rn = 1
+      ORDER BY price_count DESC, name ASC
+      LIMIT 25;
     `;
 
     const { rows } = await pool.query(query);
@@ -30,7 +36,7 @@ const getCrops = async (req, res, next) => {
   }
 };
 
-// GET /api/markets — returns markets with verified spot_prices data, with optional ?state= or ?search= filters (PRD 7.2)
+// GET /api/markets — returns markets with verified spot_prices data, with optional ?state= or ?search= filters
 const getMarkets = async (req, res, next) => {
   try {
     const { state, search } = req.query;
